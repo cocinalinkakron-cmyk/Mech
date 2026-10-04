@@ -1,15 +1,20 @@
 // Servidor local sin dependencias: API JSON + archivos estáticos + eventos en vivo (SSE).
-const http = require('http');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+
+// Lee .env si existe (Node 20.12+); las variables ya definidas tienen prioridad.
+const ENV_FILE = path.join(__dirname, '.env');
+if (fs.existsSync(ENV_FILE) && process.loadEnvFile) process.loadEnvFile(ENV_FILE);
+
+const http = require('http');
 const crypto = require('crypto');
 const os = require('os');
+const { createStore } = require('./storage');
 
 const PORT = Number(process.env.PORT) || 3000;
 const ADMIN_PIN = process.env.ADMIN_PIN || '1234';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = path.join(__dirname, 'data');
-const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 const STAGES = [
   { id: 'recibido', label: 'Recibido', desc: 'Tu vehículo llegó al taller.' },
@@ -26,21 +31,16 @@ const STAGE_IDS = STAGES.map((s) => s.id);
 // ---------- Persistencia ----------
 let db = { shop: { name: 'Taller Mech', phone: '', baseUrl: '' }, orders: [] };
 
-function loadDb() {
-  try {
-    db = { ...db, ...JSON.parse(fs.readFileSync(DB_FILE, 'utf8')) };
-  } catch (err) {
-    if (err.code !== 'ENOENT') console.error('No se pudo leer la base de datos:', err.message);
-    seed();
-    saveDb();
-  }
-}
+const store = createStore({ dataDir: DATA_DIR, getDb: () => db });
 
-function saveDb() {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  const tmp = DB_FILE + '.tmp';
-  fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
-  fs.renameSync(tmp, DB_FILE);
+async function loadDb() {
+  const saved = await store.load();
+  if (saved) {
+    db = { shop: { ...db.shop, ...saved.shop }, orders: saved.orders || [] };
+  } else {
+    seed();
+    await store.saveAll(db);
+  }
 }
 
 function seed() {
@@ -290,7 +290,7 @@ async function handleApi(req, res, url) {
         status: order.status,
         note: approved ? 'Presupuesto aprobado ✅' : 'Presupuesto rechazado',
       });
-      saveDb();
+      await store.saveOrder(order);
       broadcast(order);
       return send(res, 200, publicView(order));
     }
@@ -313,7 +313,7 @@ async function handleApi(req, res, url) {
         phone: str(body.phone, 30),
         baseUrl: /^https?:\/\/[^\s]+$/.test(baseUrl) ? baseUrl : '',
       };
-      saveDb();
+      await store.saveShop(db.shop);
       return send(res, 200, { ...db.shop, lan: lanUrls() });
     }
   }
@@ -339,7 +339,7 @@ async function handleApi(req, res, url) {
       applyOrderFields(order, { vehicle: {}, service: '', eta: '', ...body });
       addHistory(order, { type: 'status', status: 'recibido', note: str(body.note, 500) });
       db.orders.push(order);
-      saveDb();
+      await store.saveOrder(order);
       emit(adminClients, 'create', order);
       return send(res, 201, order);
     }
@@ -350,14 +350,14 @@ async function handleApi(req, res, url) {
     if (method === 'PATCH' && !parts[2]) {
       applyOrderFields(order, await readBody(req));
       order.updatedAt = new Date().toISOString();
-      saveDb();
+      await store.saveOrder(order);
       broadcast(order);
       return send(res, 200, order);
     }
 
     if (method === 'DELETE' && !parts[2]) {
       db.orders = db.orders.filter((o) => o !== order);
-      saveDb();
+      await store.deleteOrder(order);
       emit(trackClients.get(order.code), 'deleted', { code: order.code });
       emit(adminClients, 'delete', { id: order.id });
       return send(res, 200, { ok: true });
@@ -368,7 +368,7 @@ async function handleApi(req, res, url) {
       if (!STAGE_IDS.includes(body.status)) return send(res, 400, { error: 'Estado inválido' });
       order.status = body.status;
       addHistory(order, { type: 'status', status: body.status, note: str(body.note, 500) });
-      saveDb();
+      await store.saveOrder(order);
       broadcast(order);
       return send(res, 200, order);
     }
@@ -378,7 +378,7 @@ async function handleApi(req, res, url) {
       const note = str(body.note, 500);
       if (!note) return send(res, 400, { error: 'La nota está vacía' });
       addHistory(order, { type: 'note', status: order.status, note });
-      saveDb();
+      await store.saveOrder(order);
       broadcast(order);
       return send(res, 200, order);
     }
@@ -410,11 +410,21 @@ function lanUrls() {
     .map((i) => `http://${i.address}:${PORT}`);
 }
 
-loadDb();
-server.listen(PORT, '0.0.0.0', () => {
+loadDb()
+  .then(() => server.listen(PORT, '0.0.0.0', onListen))
+  .catch((err) => {
+    console.error(`\n  ❌  No se pudo cargar la base de datos (${store.name}):\n  ${err.message}\n`);
+    if (/PGRST205|does not exist|schema cache/.test(err.message)) {
+      console.error('  ¿Ya ejecutaste supabase/schema.sql en el SQL Editor de Supabase?\n');
+    }
+    process.exit(1);
+  });
+
+function onListen() {
   const lan = lanUrls();
   console.log('\n  🔧  Mech — seguimiento de reparaciones\n');
   console.log(`  Local:        http://localhost:${PORT}`);
   lan.forEach((u) => console.log(`  En tu red:    ${u}   (ábrelo desde el celular)`));
-  console.log(`  Panel taller: http://localhost:${PORT}/taller   PIN: ${ADMIN_PIN === '1234' ? '1234 (cámbialo con ADMIN_PIN)' : '••••'}\n`);
-});
+  console.log(`  Panel taller: http://localhost:${PORT}/taller   PIN: ${ADMIN_PIN === '1234' ? '1234 (cámbialo con ADMIN_PIN)' : '••••'}`);
+  console.log(`  Datos en:     ${store.name}\n`);
+}
