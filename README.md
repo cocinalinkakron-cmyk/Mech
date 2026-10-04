@@ -22,7 +22,7 @@ Opciones: `PORT=8080 ADMIN_PIN=4321 node server.js`
 
 ## Base de datos en Supabase (opcional)
 
-1. En Supabase abre **SQL Editor**, pega el contenido de [`supabase/schema.sql`](supabase/schema.sql) y dale **Run**. Esto crea las tablas `orders` y `shop` con RLS activado.
+1. *(Ya hecho en el proyecto `taller-mecanico`.)* En Supabase abre **SQL Editor**, pega el contenido de [`supabase/schema.sql`](supabase/schema.sql) y dale **Run**. Esto crea las tablas `orders` y `shop` con RLS activado.
 2. Copia `.env.example` como `.env` y rellena:
    ```env
    SUPABASE_URL=https://TU-PROYECTO.supabase.co
