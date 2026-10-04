@@ -1,0 +1,380 @@
+.page {
+  padding: 24px 0 80px;
+  display: grid;
+  gap: 16px;
+}
+.hello {
+  font-size: 15px;
+  color: var(--muted);
+}
+.vehicle-title {
+  font-size: clamp(26px, 6vw, 34px);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+.plate {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 10px;
+  border: 1.5px solid var(--text);
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+
+/* Estado actual */
+.status-card {
+  padding: 22px;
+  overflow: hidden;
+  position: relative;
+}
+.status-card.flash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%);
+  animation: flash 1.4s var(--ease) both;
+  pointer-events: none;
+}
+@keyframes flash {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.status-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.status-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex: none;
+  animation: pop 0.6s var(--spring) both;
+}
+.status-icon svg {
+  width: 26px;
+  height: 26px;
+}
+.status-card[data-tone='ok'] .status-icon {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.status-card[data-tone='warn'] .status-icon {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.status-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.status-name {
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+.status-desc {
+  margin-top: 14px;
+  color: var(--muted);
+}
+
+/* Barra de progreso con carrito */
+.progress {
+  margin-top: 26px;
+}
+.track {
+  position: relative;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--surface-2);
+}
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 55%, transparent), var(--accent));
+  transition: width 1.4s var(--ease);
+}
+.status-card[data-tone='ok'] .fill {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 55%, transparent), var(--ok));
+}
+.mini-car {
+  position: absolute;
+  top: -26px;
+  width: 38px;
+  color: var(--text);
+  transition: left 1.4s var(--ease);
+}
+.mini-car svg {
+  display: block;
+  animation: bob 0.6s ease-in-out infinite;
+}
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.progress-meta strong {
+  color: var(--text);
+}
+
+.meta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.meta {
+  padding: 16px;
+}
+.meta .k {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.meta .k svg {
+  width: 15px;
+  height: 15px;
+}
+.meta .v {
+  margin-top: 4px;
+  font-weight: 650;
+}
+.meta .v::first-letter {
+  text-transform: uppercase;
+}
+
+/* Presupuesto */
+.budget {
+  padding: 20px;
+  border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
+}
+.budget-amount {
+  font-size: 34px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  margin: 4px 0 14px;
+}
+.budget-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Avisos */
+.notify {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+.notify .ico {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  flex: none;
+}
+.notify .ico svg {
+  width: 20px;
+  height: 20px;
+}
+.notify .txt {
+  flex: 1;
+  font-size: 14px;
+}
+.notify .txt strong {
+  display: block;
+  font-size: 15px;
+}
+
+/* Línea de etapas */
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 10px 4px 0;
+}
+.steps {
+  padding: 8px 20px;
+  list-style: none;
+  margin: 0;
+}
+.step {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+}
+.step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 40px;
+  bottom: -12px;
+  width: 2px;
+  background: var(--line);
+}
+.step.done:not(:last-child)::before {
+  background: var(--accent);
+}
+.dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: transparent;
+  position: relative;
+  z-index: 1;
+}
+.dot svg {
+  width: 15px;
+  height: 15px;
+}
+.step.done .dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  animation: pop 0.5s var(--spring) both;
+  animation-delay: calc(var(--i) * 60ms);
+}
+.step.current .dot {
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: pulse 1.8s infinite;
+}
+.step.current .dot::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.step-body {
+  padding-top: 2px;
+}
+.step-name {
+  font-weight: 650;
+}
+.step.todo .step-name {
+  color: var(--muted);
+  font-weight: 500;
+}
+.step-time {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Actividad */
+.feed {
+  padding: 6px 20px;
+}
+.feed-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.feed-item:last-child {
+  border-bottom: 0;
+}
+.feed-item.new {
+  animation: rise 0.6s var(--spring) both;
+}
+.feed-ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--muted);
+}
+.feed-ico svg {
+  width: 17px;
+  height: 17px;
+}
+.feed-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+.feed-note {
+  font-size: 14.5px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: pre-wrap;
+}
+.feed-time {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.service {
+  padding: 18px 20px;
+}
+.service p {
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+.cta-call {
+  justify-self: center;
+}
+
+/* Confeti */
+.confetti {
+  position: fixed;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  z-index: 90;
+  pointer-events: none;
+  animation: fall var(--d, 2.6s) cubic-bezier(0.25, 0.6, 0.4, 1) forwards;
+}
+@keyframes fall {
+  to {
+    transform: translate3d(var(--x, 0), 105vh, 0) rotate(var(--r, 540deg));
+    opacity: 0.9;
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+}
+.empty h2 {
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+.empty p {
+  margin: 8px 0 20px;
+}
+
+.settled .rise,
+.settled .step.done .dot {
+  animation: none;
+}

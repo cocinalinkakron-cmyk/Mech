@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mech · Rastrea tu reparación</title>
+  <meta name="theme-color" content="#ff5a1f" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .hero {
+      min-height: calc(100vh - 64px);
+      display: grid;
+      place-items: center;
+      padding: 40px 0 80px;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 7vw, 60px);
+      line-height: 1.02;
+      letter-spacing: -0.045em;
+      font-weight: 750;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .hero p.lead {
+      margin-top: 16px;
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 440px;
+    }
+    .lookup {
+      margin-top: 32px;
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 18px;
+    }
+    .lookup .input {
+      border: 0;
+      box-shadow: none;
+      font-size: 20px;
+      font-weight: 650;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      background: transparent;
+    }
+    .lookup .input::placeholder {
+      letter-spacing: 0.04em;
+      font-weight: 500;
+      text-transform: none;
+      font-size: 16px;
+    }
+    .lookup .btn {
+      height: 52px;
+      padding: 0 22px;
+    }
+    .road {
+      position: relative;
+      height: 46px;
+      margin-top: 44px;
+      overflow: hidden;
+      border-bottom: 2px dashed var(--line);
+    }
+    .road .car {
+      position: absolute;
+      bottom: 4px;
+      width: 52px;
+      color: var(--accent);
+      animation: drive 7s linear infinite;
+    }
+    @keyframes drive {
+      from { left: -60px; }
+      to { left: 100%; }
+    }
+    .features {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .features div {
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .features strong {
+      display: block;
+      color: var(--text);
+      font-size: 15px;
+    }
+    @media (max-width: 560px) {
+      .features { grid-template-columns: 1fr; }
+      .lookup { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="narrow">
+      <a class="brand" href="/"><span class="brand-mark" id="logo"></span>Mech</a>
+      <a class="btn btn-ghost btn-sm" href="/taller">Soy del taller</a>
+    </div>
+  </header>
+
+  <main class="hero">
+    <section class="narrow">
+      <h1 class="rise">Tu carro,<br /><em>en tiempo real.</em></h1>
+      <p class="lead rise" style="--i: 1">Escribe el código que te dio el taller y sigue cada paso de la reparación sin tener que llamar.</p>
+
+      <form class="lookup card rise" style="--i: 2" id="form">
+        <input class="input" id="code" maxlength="6" autocomplete="off" spellcheck="false" placeholder="Código de 6 letras" aria-label="Código de seguimiento" />
+        <button class="btn btn-accent" type="submit">Rastrear <span id="arrow"></span></button>
+      </form>
+      <p class="muted rise" id="err" style="--i: 3; min-height: 24px; margin-top: 10px; font-size: 14px"></p>
+
+      <div class="road rise" style="--i: 3" aria-hidden="true">
+        <svg class="car" viewBox="0 0 64 28" fill="currentColor"><path d="M8 18c0-2 1-3 3-4l7-6c2-1.5 4-2 6-2h14c3 0 5 1 7 3l5 5h4c3 0 5 2 5 5v2H8z"/><circle cx="18" cy="21" r="5" fill="var(--text)"/><circle cx="48" cy="21" r="5" fill="var(--text)"/><circle cx="18" cy="21" r="2" fill="var(--bg)"/><circle cx="48" cy="21" r="2" fill="var(--bg)"/></svg>
+      </div>
+
+      <div class="features rise" style="--i: 4">
+        <div><strong>En vivo</strong>Se actualiza solo, al instante.</div>
+        <div><strong>Avisos</strong>Te notificamos cada cambio.</div>
+        <div><strong>Transparente</strong>Notas, fechas y presupuesto.</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/common.js"></script>
+  <script>
+    document.getElementById('logo').innerHTML = Mech.icon('wrench');
+    document.getElementById('arrow').innerHTML = Mech.icon('arrow');
+    const form = document.getElementById('form');
+    const input = document.getElementById('code');
+    const err = document.getElementById('err');
+    input.addEventListener('input', () => {
+      input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      err.textContent = '';
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = input.value.trim();
+      if (code.length < 6) {
+        err.textContent = 'El código tiene 6 caracteres.';
+        form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+        return;
+      }
+      try {
+        await Mech.api(`/track/${code}`);
+        location.href = `/t/${code}`;
+      } catch (ex) {
+        err.textContent = ex.message;
+        form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+      }
+    });
+  </script>
+</body>
+</html>

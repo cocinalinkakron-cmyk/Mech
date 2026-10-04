@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel del taller · Mech</title>
+  <meta name="theme-color" content="#ff5a1f" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/admin.css" />
+</head>
+<body>
+  <!-- Acceso -->
+  <main id="login" class="login hidden">
+    <form class="card login-card rise" id="login-form">
+      <span class="brand-mark big" data-icon="wrench"></span>
+      <h1>Panel del taller</h1>
+      <p class="muted">Ingresa tu PIN para continuar</p>
+      <input class="input pin" id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" aria-label="PIN" />
+      <button class="btn btn-primary" type="submit" style="width: 100%">Entrar</button>
+      <p class="login-err" id="login-err"></p>
+    </form>
+  </main>
+
+  <!-- Panel -->
+  <div id="dash" class="hidden">
+    <header class="topbar">
+      <div class="wrap">
+        <a class="brand" href="/taller"><span class="brand-mark" data-icon="wrench"></span><span id="shop-title">Taller</span></a>
+        <div class="top-actions">
+          <span class="chip" id="live">…</span>
+          <button class="btn btn-ghost btn-icon btn-sm" id="settings-btn" title="Ajustes" data-icon="settings"></button>
+          <button class="btn btn-ghost btn-icon btn-sm" id="logout-btn" title="Salir" data-icon="logout"></button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap dash">
+      <div class="dash-head rise">
+        <div>
+          <h1>Órdenes</h1>
+          <p class="muted" id="today"></p>
+        </div>
+        <button class="btn btn-accent" id="new-btn"><span data-icon="plus"></span>Nueva orden</button>
+      </div>
+
+      <section class="stats" id="stats"></section>
+
+      <div class="toolbar rise" style="--i: 2">
+        <label class="search">
+          <span data-icon="search"></span>
+          <input class="input" id="search" placeholder="Buscar cliente, placa, código…" />
+        </label>
+        <div class="tabs" id="tabs" role="tablist">
+          <span class="tab-ink"></span>
+          <button class="tab active" data-filter="active">Activas</button>
+          <button class="tab" data-filter="ready">Listas</button>
+          <button class="tab" data-filter="done">Entregadas</button>
+          <button class="tab" data-filter="all">Todas</button>
+        </div>
+      </div>
+
+      <section class="orders" id="orders"></section>
+    </main>
+  </div>
+
+  <script src="/common.js"></script>
+  <script src="/admin.js"></script>
+</body>
+</html>
